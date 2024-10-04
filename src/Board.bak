@@ -1,0 +1,44 @@
+#lang br/quicklang
+
+;; Define a class
+(define Board
+  (class object%
+    (init n-init reds-init blues-init snakes-init stairs-init p-init gamma-init)
+    (super-new)  ; Call the superclass constructor
+    
+    ;; Define a field
+    (define n n-init)
+    (define reds reds-init)
+    (define blues blues-init)
+    (define snakes snakes-init)
+    (define stairs stairs-init)
+    (define p p-init)
+    (define gamma gamma-init)
+    
+    ;; Define a method
+    ;; (define/public (get-x)
+    ;;   x)
+    
+    ;; Define a method to set the field
+    ;; (define/public (set-x new-x)
+    ;;   (set! x new-x))
+    
+    ;; Define another method
+    (define/public (display-blues)
+      (printf "blues is: ~a\n" blues))
+    
+    )
+)
+
+;; Instantiate the class
+(define blues (list 1 2 3 4 5))
+(define reds (list 1 2 3 4 5))
+(define stairs (list 1 2 3 4 5))
+(define snakes (list 1 2 3 4 5))
+(define n 10)
+(define gamma 0.1)
+(define p (list 0.1 0.2 0.3 0.1 0.1 0.2))
+(define board (new Board [n-init n] [reds-init reds] [blues-init blues] [snakes-init snakes] [stairs-init stairs] [p-init p] [gamma-init gamma]))
+
+;; Use the object's methods
+(send board display-blues)
