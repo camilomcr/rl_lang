@@ -1,5 +1,6 @@
 #lang br/quicklang
 (require math)
+(provide Board)
 
 ;; Define Board class
 (define Board
@@ -75,6 +76,7 @@
       (define rewards (make-vector (* n n) 0))
       (for ([blue blues]) (vector-set! rewards (sub1 blue) 1))  ;; Set reward for blues
       (for ([red reds]) (vector-set! rewards (sub1 red) -1))    ;; Set reward for reds
+      
       (for ([s states])
         (for ([a (in-vector actions)])
           (for ([sp states])
@@ -90,7 +92,7 @@
                   (let ([initCell (send this getInitCell sp)])  ;; Fall on initCell to go to sp, 0 if not possible
                     ;; Further logic goes here using initCell
                     (when initCell
-                      (when (and initCell
+                      (when (and (not (= initCell 0))
                                  (not (member initCell reds))
                                  (not (member initCell blues))
                                  (= (vector-ref rewards (- sp 1)) (- r 1)))
@@ -165,22 +167,3 @@
     
     )
   )
-
-;; Instantiate the class
-(define blues (list 80 100))
-(define reds (list 23 37 45 67 89))
-(define stairs '((8 26)(21 82)(43 77)(50 91)(54 93)(62 96)(66 87)(80 100)))
-(define snakes '((98 28)(95 24)(92 51)(83 19)(73 1)(69 33)(64 36)(59 17)(55 7)(52 11)(48 9)(46 5)(44 22)))
-(define p (vector 0.3 0.19 0.01 0.01 0.19 0.3))
-(define n 10)
-(define eps 1e-8)
-(define gamma 0.9)
-(define epsilon 0.1)
-(define alpha 0.1)
-(define episodes 500000)
-
-(define board (new Board [n-init n] [reds-init reds] [blues-init blues] [snakes-init snakes] [stairs-init stairs] [p-init p] [gamma-init gamma]))
-
-;; Use the object's methods
-(define transitionProbabilities (send board buildMDP))
-(displayln transitionProbabilities)
