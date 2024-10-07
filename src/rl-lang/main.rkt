@@ -1,6 +1,4 @@
-#lang br/quicklang
-;; #lang reader "rl_lang.rkt"
-
+#lang reader "rl_lang.rkt"
 
 (require "Board.rkt")
 (require "Learning_functions.rkt")

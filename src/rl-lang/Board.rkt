@@ -1,4 +1,5 @@
-#lang br/quicklang
+#lang reader "rl_lang.rkt"
+
 (require math)
 (provide Board)
 
