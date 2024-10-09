@@ -78,10 +78,7 @@
       (for ([blue blues]) (vector-set! rewards (sub1 blue) 1))  ;; Set reward for blues
       (for ([red reds]) (vector-set! rewards (sub1 red) -1))    ;; Set reward for reds
       
-      (for ([s states])
-        (for ([a (in-vector actions)])
-          (for ([sp states])
-            (for ([r rewardsPossibles])
+      (for-rl ([s states] [a (in-vector actions)] [sp states] [r rewardsPossibles]) 
 
               (if (send this spInInitCell sp)
                   ;; If sp is in an initial cell, set transition probability to 0 and skip further logic
@@ -159,9 +156,6 @@
                       )))
 
               )
-            )
-          )
-        )
       transitionProbabilities
       )
 
