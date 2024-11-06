@@ -1,6 +1,7 @@
 #lang br/quicklang
 
 (require math)
+(require racket/random)
 (provide Board)
 
 ;; Define Board class
@@ -26,6 +27,47 @@
     (define/public (setGamma new-gamma)
       (set! gamma new-gamma))
 
+    ;; Helper function to apply snake or ladder effect
+    (define (apply-snake-or-ladder cell snakes ladders)
+      (define (find-destination cell pairs)
+        (for/fold ([current-cell cell]) ([pair pairs])
+          (if (= cell (first pair)) (second pair) current-cell)))
+      (define cell-after-snakes (find-destination cell snakes))
+      (define cell-after-ladders (find-destination cell-after-snakes ladders))
+      cell-after-ladders)
+
+    ;; Main function for action
+    (define/public (do-action action actual-state)
+      
+      (define dice-result (+ 1 (random 6)))
+      (define next-state 0)
+      (define reward 0)
+
+      ;; Action logic
+      (set! next-state
+            (cond
+              [(= action 0) ; Move backwards
+               (let ([temp-state (- actual-state dice-result)])
+                 (if (<= temp-state 0)
+                     (+ 1 (modulo (- (* n n) (- temp-state 1)) (* n n)))
+                     temp-state))]
+              [(= action 1) ; Move forwards
+               (let ([temp-state (+ actual-state dice-result)])
+                 (if (> temp-state (* n n))
+                     (- (* n n) (modulo temp-state (* n n)))
+                     temp-state))]))
+      
+      ;; Snakes and Ladders
+      (when (send this spInInitCell next-state)
+        (set! next-state (apply-snake-or-ladder next-state snakes stairs)))
+      ;; Reward calculation
+      (cond
+        [(member next-state reds) (set! reward -1)]
+        [(member next-state blues) (set! reward 1)])
+
+      ;; Return next-state and reward as value
+      (values reward next-state))
+    
     ;; Method to get the initial cell for a snake or stair given their final cell
     (define/public (getInitCell sp)
       (cond

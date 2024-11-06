@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>QLearning Example </title>
+		<script src="qlearning2.js"></script>
+		<style>
+		        body {
+		            font-family: monospace;
+		            font-size: 120%;
+		            padding: 5%;
+		        }
+		        canvas {
+		            border: 2px solid black;
+		            width: 300px;
+		            margin: 1% auto 1% auto;
+		            display: block;
+		        }
+		        #score {
+		            text-align: right;
+		        }
+		        #log, #log2{width: 400px;
+		        	height:400px;}
+
+		        #map {
+		        	width: 90%;
+		        	margin-left: 5%;
+		        	height:200px;
+		        	position: relative;
+		        	margin-top: 10px;
+		        	border: 2px solid #000;
+		        	overflow: hidden;
+		        }
+		        #agent {width: 40px;
+		        	height: 40px;
+		        	position: absolute;
+		        	top:55px;
+		        	left:3%;
+		        	background: #3498db;
+		        	border-radius: 20%;
+		        }
+		        .carB{
+		        	width: 40px;
+		        	height: 40px;
+		        	position: absolute;
+		        	top: 55px;
+		        	left:100%;
+		        	background: #e74c3c;
+		        	border-radius: 20%;
+		        	border:solid 1px #222;
+		        }
+		        .bank{
+		        	width:100%;
+		        	background: #2c3e50;
+		        	height:50px;
+		        	position: absolute;
+		        }
+		        #b1 {
+		        	top:0px;
+		        	left: 0px;
+		        }
+		        #b2{
+		        	top:150px;
+		        	left:0px;
+		        }
+        </style>
+       
+	</head>
+	<body>
+	<!--<canvas id="canvas" width="1200px" height="600px"></canvas>-->
+	<div id="map">
+		<div class="bank" id="b1"></div>
+		<div class="bank" id="b2"></div>
+		<div id="agent"></div>
+		
+		
+
+	</div>
+	<br />
+	<button onclick="document.getElementById('log').value = JSON.stringify(learner.qvalues)" >Output QValues</button>
+	<br />
+	<br />
+	<button onclick="writeConsole(document.getElementById('log2').value);" >Output CSV to new Window</button>
+	<br />
+	<script type="text/javascript">
+			function writeConsole(content) {
+				 top.consoleRef=window.open('','myconsole',
+				  'width=950,height=550'
+				   +',menubar=0'
+				   +',toolbar=1'
+				   +',status=0'
+				   +',scrollbars=1'
+				   +',resizable=1')
+				 top.consoleRef.document.writeln(
+				  '<html><head><title>Console</title></head>'
+				   +'<body bgcolor=white onLoad="self.focus()">'
+				   +content
+				   +'</body></html>'
+				 )
+				 top.consoleRef.document.close()
+				}
+
+	</script>
+	 <span id="score"></span>
+	 <br /> Log <br />
+	  <textarea type="text" id="log2" ></textarea>
+	 <textarea type="text" id="log" ></textarea>
+
+		<script src="car_difSpeeds_JS.js"></script>
+	</body>
+</html>

@@ -6,41 +6,25 @@
 ;; Define Board class
 (define Board
   (class object%
-    (init n-init reds-init blues-init snakes-init stairs-init p-init gamma-init)
+    (init hyperparameters-init reward-fn-init states-fn-init)
     (super-new)  ; Call the superclass constructor
     
     ;; Define board parameters
-    (define n n-init)
-    (define reds reds-init)
-    (define blues blues-init)
-    (define snakes snakes-init)
-    (define stairs stairs-init)
-    (define p p-init)
-    (define gamma gamma-init)
-    
-    ;; Method to set dice probabilities
-    (define/public (setDiceProbabilities new-p)
-      (set! p new-p))
-    
-    ;; Method to set gamma
-    (define/public (setGamma new-gamma)
-      (set! gamma new-gamma))
+    (rl-env environment (hyperparameters-init reward-fn-init states-fn-init))
 
-    ;; Method to get the initial cell for a snake or stair given their final cell
-    (define/public (getInitCell sp)
-      (cond
-        ;; Check if sp is the final cell of a snake
-        [(for/first ([snake snakes] #:when (= (second snake) sp))
-           (first snake))]
-        
-        ;; Check if sp is the final cell of a stair
-        [(for/first ([stair stairs] #:when (= (second stair) sp))
-           (first stair))]
-
-        ;; Default case: return 0 if not found
-        [else 0]))
+    ;; Helper function to create a 4D array
+    (define (make-4d-array dim1 dim2 dim3 dim4 init-val)
+      (define indx (vector dim1 dim2 dim3 dim4))
+      (array->mutable-array(make-array indx init-val))
+      )
 
     (define/public (spInInitCell sp)
+      (define hyperp (rl-environment-hyperparameters environment))
+      (define snakes (hash-ref hyperp 'snakes))
+      (define stairs (hash-ref hyperp 'stairs))
+      (define reds (hash-ref hyperp 'reds))
+      (define blues (hash-ref hyperp 'blues))
+      
       (cond
         ;; If sp is in reds or blues, return #f
         [(or (member sp reds) (member sp blues)) #f]
@@ -56,14 +40,34 @@
         ;; Default case: return #f if not found
         [else #f]))
 
-    ;; Helper function to create a 4D array
-    (define (make-4d-array dim1 dim2 dim3 dim4 init-val)
-      (define indx (vector dim1 dim2 dim3 dim4))
-      (array->mutable-array(make-array indx init-val))
-      )
+    ;; Method to get the initial cell for a snake or stair given their final cell
+    (define/public (getInitCell sp)
+      
+      (define hyperp (rl-environment-hyperparameters environment))
+      (define snakes (hash-ref hyperp 'snakes))
+      (define stairs (hash-ref hyperp 'stairs))
+      
+      (cond
+        ;; Check if sp is the final cell of a snake
+        [(for/first ([snake snakes] #:when (= (second snake) sp))
+           (first snake))]
+        
+        ;; Check if sp is the final cell of a stair
+        [(for/first ([stair stairs] #:when (= (second stair) sp))
+           (first stair))]
+
+        ;; Default case: return 0 if not found
+        [else 0]))
     
     ;; Method to build the Markov Decision Process (MDP)
     (define/public (buildMDP)
+      (define reward-fn (rl-environment-reward-function environment))
+      (define hyperp (rl-environment-hyperparameters environment))
+      (define states-fn (rl-environment-states-function environment))
+      (define n (hash-ref hyperp 'n))
+      (define p (hash-ref hyperp 'p))
+      (define reds (hash-ref hyperp 'reds))
+      (define blues (hash-ref hyperp 'blues))
       
       (define actions (vector 0 1))  ;; 0 backwards, 1 forward
       (define states (range 1 (+ (* n n) 1)))  ;; States from 1 to n^2
@@ -72,11 +76,6 @@
       (define num-actions 2)          ;; Actions: forward (1) and backward (0)
       (define num-rewards 3)  
       (define transitionProbabilities (make-4d-array num-states num-actions num-rewards num-states 0))
-
-      ;; Initialize rewards
-      (define rewards (make-vector (* n n) 0))
-      (for ([blue blues]) (vector-set! rewards (sub1 blue) 1))  ;; Set reward for blues
-      (for ([red reds]) (vector-set! rewards (sub1 red) -1))    ;; Set reward for reds
       
       (for-rl ([s states] [a (in-vector actions)] [sp states] [r rewardsPossibles]) 
 
@@ -93,7 +92,7 @@
                       (when (and (not (= initCell 0))
                                  (not (member initCell reds))
                                  (not (member initCell blues))
-                                 (= (vector-ref rewards (- sp 1)) (- r 1)))
+                                 (= (reward-fn s a sp) (- r 1)))
   
                         ;; Bounce going backwards (a=0)
                         (when (and (= a 0) (< (- s 6) 1))
@@ -122,7 +121,7 @@
                                 )
                               ))))
                       
-                      (when (= (vector-ref rewards (- sp 1)) (- r 1))
+                      (when (= (reward-fn s a sp) (- r 1))
 
                         ;; Bounce going backwards (a=0)
                         (when (and (= a 0) (< (- s 6) 1))
@@ -154,11 +153,8 @@
 
 
                       )))
-
               )
       transitionProbabilities
       )
-
-    
     )
   )
